@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+
+	<body ng-controller="indexCtrl">
+		<input ng-model="say" />
+		<button ng-click="submit()">发话</button>
+		<p>{{name}}</p>
+		<div ng-bind-html="html"></div>
+	</body>
+	<script src="socket.io/js/angular.js"></script>
+	<script>
+		var app = angular.module("chatApp", []);
+		app.controller("indexCtrl", function($scope, $sce) {
+			$scope.name = "chat";
+			ws = new WebSocket("ws://localhost:9898");
+			/*ws.send({
+					type: "say",
+					to_client_id: "",
+					to_client_name: ""
+				})*/
+			//打开WebSocket进行握手
+			//登录要传{type:'login',client_name:'','room_id':1}
+			ws.onopen = function() {
+				ws.send('{"type": "login","client_name": "愚蠢的老姚","room_id": 1}')
+			}
+			//保持跟服务端通信给消息
+			$scope.html = "";
+			ws.onmessage = function(e) {
+					console.log(e.data)
+					var data = JSON.parse(e.data)
+					console.log(data)
+					switch(data.type) {
+						case 'say':
+							//接受说话的消息，以html呈现在界面
+							$scope.html = $scope.html + data.content + "<br />";
+							$scope.html = $sce.trustAsHtml($scope.html);
+							break;
+					}
+					console.log($scope.html)
+						//手动刷新
+					$scope.$apply();
+
+				}
+				//服务端关闭时候触发的回调
+			ws.onclose = function() {
+
+				}
+				//出现错误时候的回调
+			ws.onerror = function() {
+
+			}
+			$scope.submit = function(){
+				ws.send('{"type":"say","to_client_id":"all","to_client_name":"所有人","content":"'+$scope.say+'"}')
+			}
+		})
+		angular.bootstrap(document, ["chatApp"])
+	</script>
+
+</html>

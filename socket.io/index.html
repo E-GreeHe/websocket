@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+
+	<body>
+		<input id="input">
+		<button onclick="send()">发送</button>
+		<p id="p"></p>
+	</body>
+	<script src="./js/socket.js"></script>
+	<script>
+		var socket = io("http://localhost:9999/");
+		function send() {; 
+			socket.emit("message", document.getElementById("input").value)
+
+		}
+		//socket.emit("message",document.getElementById("input").value)
+		socket.on("say", function(data) {
+			console.log(data)
+			document.getElementById("p").innerHTML += data + "<br />";
+		})
+	</script>
+
+</html>
